@@ -11,16 +11,32 @@ require_once __DIR__ . '/../app/models/Customer.php';
 require_once __DIR__ . '/../app/models/ServicePlan.php';
 require_once __DIR__ . '/../app/models/Subscription.php';
 require_once __DIR__ . '/../app/models/Invoice.php';
+require_once __DIR__ . '/../app/models/SupportTicket.php';
 
-$customerModel    = new Customer($conn);
-$planModel        = new ServicePlan($conn);
+$customerModel     = new Customer($conn);
+$planModel         = new ServicePlan($conn);
 $subscriptionModel = new Subscription($conn);
-$invoiceModel     = new Invoice($conn);
+$invoiceModel      = new Invoice($conn);
+$ticketModel       = new SupportTicket($conn);
 
 $customerId   = $_SESSION['customer_id'];
 $customerName = $_SESSION['customer_name'];
 $message      = '';
 $msgType      = '';
+
+// Handle support ticket submission from the portal
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['issue'])) {
+    $issue = trim($_POST['issue'] ?? '');
+    if ($issue) {
+        // Customer ID comes from the session — no need for a dropdown
+        $ticketModel->create($customerId, $issue);
+        $message = 'Your support ticket has been submitted. We will get back to you shortly.';
+        $msgType = 'success';
+    } else {
+        $message = 'Please describe your issue before submitting.';
+        $msgType = 'error';
+    }
+}
 
 // Handle plan purchase
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['plan_id'])) {
@@ -62,6 +78,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['plan_id'])) {
         }
     }
 }
+
+// Fetch customer's own support tickets
+$myTickets = $ticketModel->getByCustomer($customerId);
 
 // Fetch data
 $plans = $planModel->getAll();
@@ -117,8 +136,13 @@ $myInvoices = $invStmt->get_result();
     .plan-card .plan-price span { font-size:13px; color:#888; font-weight:400; }
     .plan-card .plan-desc  { font-size:12px; color:#999; margin-bottom:18px; min-height:32px; }
     .plan-card .btn { width:100%; }
-    .msg-success { background:#e6f4ea; color:#1e8e3e; border-radius:8px; padding:12px 18px; margin-bottom:20px; font-size:14px; }
-    .msg-error   { background:#fce8e6; color:#d93025; border-radius:8px; padding:12px 18px; margin-bottom:20px; font-size:14px; }
+    .ticket-form { background:#fff; border-radius:10px; padding:24px 28px;
+                   box-shadow:0 1px 6px rgba(0,0,0,.07); margin-bottom:28px; }
+    .ticket-form h3 { font-size:15px; font-weight:700; color:#0a2540; margin-bottom:14px; }
+    .ticket-form textarea { width:100%; padding:10px 12px; border:1px solid #d0d7de;
+                            border-radius:6px; font-size:14px; font-family:inherit;
+                            resize:vertical; outline:none; min-height:90px; }
+    .ticket-form textarea:focus { border-color:#1a73e8; }
     .welcome-banner { background:linear-gradient(135deg,#0a2540,#1a73e8); color:#fff;
                       border-radius:12px; padding:24px 28px; margin-bottom:28px; }
     .welcome-banner h2 { font-size:20px; margin-bottom:4px; }
@@ -204,7 +228,7 @@ $myInvoices = $invStmt->get_result();
 
   <!-- My Invoices -->
   <div class="section-title">My Invoices</div>
-  <div class="table-wrap">
+  <div class="table-wrap" style="margin-bottom:28px;">
     <table>
       <thead>
         <tr><th>#</th><th>Plan</th><th>Amount</th><th>Status</th><th>Due Date</th></tr>
@@ -224,6 +248,49 @@ $myInvoices = $invStmt->get_result();
               </span>
             </td>
             <td><?= $inv['due_date'] ?></td>
+          </tr>
+          <?php endwhile; ?>
+        <?php endif; ?>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Support Tickets -->
+  <div class="section-title">Contact Support</div>
+
+  <!-- Ticket submission form — customer describes their issue and submits -->
+  <div class="ticket-form">
+    <h3>Submit a New Support Ticket</h3>
+    <form method="POST">
+      <div style="margin-bottom:12px;">
+        <textarea name="issue" placeholder="Describe your issue or concern here..." required></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Submit Ticket</button>
+    </form>
+  </div>
+
+  <!-- Customer's own ticket history -->
+  <div class="section-title" style="margin-top:4px;">My Support Tickets</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Issue</th><th>Status</th><th>Date Submitted</th></tr>
+      </thead>
+      <tbody>
+        <?php if ($myTickets->num_rows === 0): ?>
+          <tr><td colspan="4" style="text-align:center;color:#888;padding:20px;">No tickets submitted yet.</td></tr>
+        <?php else: ?>
+          <?php $i = 1; while ($t = $myTickets->fetch_assoc()): ?>
+            <?php
+              // Map status to badge class
+              $badge = $t['status'] === 'Open' ? 'open'
+                     : ($t['status'] === 'In Progress' ? 'progress' : 'resolved');
+            ?>
+          <tr>
+            <td><?= $i++ ?></td>
+            <td><?= htmlspecialchars($t['issue']) ?></td>
+            <td><span class="badge badge-<?= $badge ?>"><?= $t['status'] ?></span></td>
+            <td><?= date('d M Y', strtotime($t['created_at'])) ?></td>
           </tr>
           <?php endwhile; ?>
         <?php endif; ?>

@@ -33,4 +33,17 @@ class SupportTicket {
     public function countOpen() {
         return $this->conn->query("SELECT COUNT(*) as total FROM support_tickets WHERE status='Open'")->fetch_assoc()['total'];
     }
+
+    /**
+     * Retrieve all tickets submitted by a specific customer.
+     * Used by the customer portal to show their own ticket history.
+     */
+    public function getByCustomer($customerId) {
+        $stmt = $this->conn->prepare(
+            "SELECT * FROM support_tickets WHERE customer_id = ? ORDER BY created_at DESC"
+        );
+        $stmt->bind_param("i", $customerId);
+        $stmt->execute();
+        return $stmt->get_result();
+    }
 }
