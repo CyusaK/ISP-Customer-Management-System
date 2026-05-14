@@ -1,0 +1,7 @@
+# KigaliNet ISP CMS — .gitignore
+/vendor/
+*.env
+*.log
+*.DS_Store
+Thumbs.db
+/docker/mysql_data/

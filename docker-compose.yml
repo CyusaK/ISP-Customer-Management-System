@@ -1,0 +1,42 @@
+# docker-compose.yml — KigaliNet ISP CMS | Student ID: 26524
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: kigalinet_app
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_USER: root
+      DB_PASS: root
+      DB_NAME: isp_cms
+    volumes:
+      - .:/var/www/html
+    networks:
+      - isp_network
+
+  db:
+    image: mysql:8.0
+    container_name: kigalinet_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: isp_cms
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database/isp_cms.sql:/docker-entrypoint-initdb.d/isp_cms.sql
+    networks:
+      - isp_network
+
+volumes:
+  db_data:
+
+networks:
+  isp_network:
+    driver: bridge
