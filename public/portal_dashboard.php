@@ -118,7 +118,8 @@ $myInvoices = $invStmt->get_result();
   <link rel="stylesheet" href="assets/css/style.css">
   <style>
     .portal-topbar { background:#0a2540; color:#fff; padding:14px 30px;
-                     display:flex; justify-content:space-between; align-items:center; }
+                     display:flex; justify-content:space-between; align-items:center;
+                     position:sticky; top:0; z-index:100; }
     .portal-topbar .brand { font-size:18px; font-weight:700; display:flex; align-items:center; gap:8px; }
     .portal-topbar .user  { font-size:14px; display:flex; align-items:center; gap:16px; }
     .portal-topbar a { color:#9ab0c8; text-decoration:none; font-size:13px; }
