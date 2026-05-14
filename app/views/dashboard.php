@@ -20,6 +20,11 @@
     <div class="card-value"><?= number_format($stats['revenue']) ?></div>
     <div class="card-icon"></div>
   </div>
+  <div class="card red">
+    <div class="card-label">Open Tickets</div>
+    <div class="card-value"><?= $stats['open_tickets'] ?></div>
+    <div class="card-icon"></div>
+  </div>
 </div>
 
 <div class="recent-section">

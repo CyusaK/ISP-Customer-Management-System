@@ -33,12 +33,14 @@ require_once __DIR__ . '/../app/models/ServicePlan.php';
 require_once __DIR__ . '/../app/models/Subscription.php';
 require_once __DIR__ . '/../app/models/Invoice.php';
 require_once __DIR__ . '/../app/models/Payment.php';
+require_once __DIR__ . '/../app/models/SupportTicket.php';
 
 // Controllers — each class handles HTTP input and calls the appropriate model
 require_once __DIR__ . '/../app/controllers/CustomerController.php';
 require_once __DIR__ . '/../app/controllers/ServicePlanController.php';
 require_once __DIR__ . '/../app/controllers/SubscriptionController.php';
 require_once __DIR__ . '/../app/controllers/BillingController.php';
+require_once __DIR__ . '/../app/controllers/SupportController.php';
 
 // ── Instantiate models ────────────────────────────────────────────────────────
 // Pass the shared $conn to every model so they all use the same DB connection
@@ -53,6 +55,8 @@ $customerCtrl     = new CustomerController($customerModel);
 $planCtrl         = new ServicePlanController($planModel);
 $subscriptionCtrl = new SubscriptionController($subscriptionModel);
 $billingCtrl      = new BillingController($invoiceModel, $paymentModel);
+$ticketModel      = new SupportTicket($conn);
+$supportCtrl      = new SupportController($ticketModel);
 
 // ── Read routing parameters from the URL ─────────────────────────────────────
 // ?page=  determines which module/view to show (default: dashboard)
@@ -103,6 +107,15 @@ if ($page === 'customers') {
         // POST: generate a new invoice for an active subscription
         $billingCtrl->generateInvoice();
     }
+
+} elseif ($page === 'support') {
+    if ($action === 'status') {
+        // Toggle ticket status: Open -> In Progress -> Resolved
+        $supportCtrl->updateStatus();
+    } elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        // POST: submit a new support ticket
+        $supportCtrl->submit();
+    }
 }
 
 // ── Dashboard statistics ──────────────────────────────────────────────────────
@@ -114,6 +127,7 @@ try {
         'subscriptions' => $subscriptionModel->count(),   // active subscriptions only
         'unpaid'        => $invoiceModel->countUnpaid(),  // invoices not yet paid
         'revenue'       => $invoiceModel->totalRevenue(), // sum of all paid invoices
+        'open_tickets'  => $ticketModel->countOpen(),     // open support tickets
     ];
 } catch (Exception $e) {
     // Fallback to zeros if the database tables do not exist yet

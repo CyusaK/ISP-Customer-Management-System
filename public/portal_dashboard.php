@@ -142,7 +142,7 @@ $myInvoices = $invStmt->get_result();
       <h2>Welcome back, <?= htmlspecialchars(explode(' ', $customerName)[0]) ?>!</h2>
       <p>Browse our internet packages below and subscribe to get connected.</p>
     </div>
-    <a href="portal_report.php" class="btn" style="background:#fff;color:#0a2540;font-weight:700;white-space:nowrap;">📄 My Profile Report</a>
+    <a href="portal_report.php" class="btn" style="background:#fff;color:#0a2540;font-weight:700;white-space:nowrap;">My Invoice Report</a>
   </div>
 
   <?php if ($message): ?>

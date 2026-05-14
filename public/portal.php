@@ -128,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 <div class="card">
   <div class="logo">
-    <div class="icon">🌐</div>
+    <div class="icon"></div>
     <h1>KigaliNet ISP</h1>
     <p>Customer Portal</p>
   </div>

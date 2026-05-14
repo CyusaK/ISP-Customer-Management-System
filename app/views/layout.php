@@ -24,7 +24,7 @@
   <!-- The 'active' class highlights the link for the current page ($page) -->
   <aside class="sidebar">
     <div class="brand">
-      <span class="brand-icon">🌐</span>
+      <span class="brand-icon"></span>
       <span>KigaliNet ISP</span>
     </div>
     <nav>
@@ -33,6 +33,7 @@
       <a href="index.php?page=plans"         class="<?= $page==='plans'?'active':'' ?>">Service Plans</a>
       <a href="index.php?page=subscriptions" class="<?= $page==='subscriptions'?'active':'' ?>">Subscriptions</a>
       <a href="index.php?page=billing"       class="<?= $page==='billing'?'active':'' ?>">Billing</a>
+      <a href="index.php?page=support"       class="<?= $page==='support'?'active':'' ?>">Support Tickets</a>
       <a href="index.php?page=reports"       class="<?= $page==='reports'?'active':'' ?>">Reports</a>
     </nav>
 
@@ -63,6 +64,7 @@
               'plans'         => 'Service Plans',
               'subscriptions' => 'Subscriptions',
               'billing'       => 'Billing',
+              'support'       => 'Support Tickets',
               'reports'       => 'Reports',
           ];
           echo $titles[$page] ?? 'KigaliNet ISP';
@@ -84,6 +86,7 @@
             'created'    => 'Created successfully.',
             'generated'  => 'Invoice generated.',
             'paid'       => 'Payment recorded successfully.',
+            'submitted'  => 'Support ticket submitted.',
         ];
         echo $msgs[$_GET['msg']] ?? 'Action completed.';
       ?>
@@ -99,6 +102,7 @@
           'plans'         => __DIR__ . '/plans.php',
           'subscriptions' => __DIR__ . '/subscriptions.php',
           'billing'       => __DIR__ . '/billing.php',
+          'support'       => __DIR__ . '/support.php',
           'reports'       => __DIR__ . '/reports.php',
           'dashboard'     => __DIR__ . '/dashboard.php',
       ];
