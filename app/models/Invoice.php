@@ -76,4 +76,41 @@ class Invoice {
             "SELECT SUM(amount) as total FROM invoices WHERE status='Paid'"
         )->fetch_assoc()['total'] ?? 0;
     }
+
+    /**
+     * Retrieve invoices for a specific customer with optional date range filtering.
+     * Used by the customer portal report page.
+     * $dateFrom and $dateTo are strings in 'Y-m-d' format, or empty to skip filtering.
+     */
+    public function getByCustomerFiltered($customerId, $dateFrom = '', $dateTo = '') {
+        // Base query — always filters by customer
+        $sql = "SELECT i.*, p.name AS plan_name
+                FROM invoices i
+                JOIN subscriptions s ON i.subscription_id = s.id
+                JOIN service_plans p ON s.plan_id = p.id
+                WHERE s.customer_id = ?";
+
+        $params     = [$customerId];
+        $paramTypes = 'i';
+
+        // Append date filters only when the user provided them
+        if ($dateFrom) {
+            $sql         .= " AND DATE(i.created_at) >= ?";
+            $paramTypes  .= 's';
+            $params[]     = $dateFrom;
+        }
+        if ($dateTo) {
+            $sql         .= " AND DATE(i.created_at) <= ?";
+            $paramTypes  .= 's';
+            $params[]     = $dateTo;
+        }
+
+        $sql .= " ORDER BY i.created_at DESC";
+
+        $stmt = $this->conn->prepare($sql);
+        // Unpack the params array dynamically using the spread operator
+        $stmt->bind_param($paramTypes, ...$params);
+        $stmt->execute();
+        return $stmt->get_result();
+    }
 }

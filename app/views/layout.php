@@ -33,6 +33,7 @@
       <a href="index.php?page=plans"         class="<?= $page==='plans'?'active':'' ?>">Service Plans</a>
       <a href="index.php?page=subscriptions" class="<?= $page==='subscriptions'?'active':'' ?>">Subscriptions</a>
       <a href="index.php?page=billing"       class="<?= $page==='billing'?'active':'' ?>">Billing</a>
+      <a href="index.php?page=reports"       class="<?= $page==='reports'?'active':'' ?>">Reports</a>
     </nav>
 
     <!-- Quick link to the customer-facing portal -->
@@ -62,6 +63,7 @@
               'plans'         => 'Service Plans',
               'subscriptions' => 'Subscriptions',
               'billing'       => 'Billing',
+              'reports'       => 'Reports',
           ];
           echo $titles[$page] ?? 'KigaliNet ISP';
         ?>
@@ -97,6 +99,7 @@
           'plans'         => __DIR__ . '/plans.php',
           'subscriptions' => __DIR__ . '/subscriptions.php',
           'billing'       => __DIR__ . '/billing.php',
+          'reports'       => __DIR__ . '/reports.php',
           'dashboard'     => __DIR__ . '/dashboard.php',
       ];
       $viewFile = $viewMap[$page] ?? $viewMap['dashboard'];

@@ -28,16 +28,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['plan_id'])) {
     $plan   = $planModel->getById($planId);
 
     if ($plan) {
-        // Check if customer already has an active subscription for this plan
+        // Block re-subscription if the customer already has an active plan at the same price.
+        // This prevents paying twice for equivalent packages (e.g. two 35,000 RWF plans).
         $stmt = $conn->prepare(
-            "SELECT id FROM subscriptions WHERE customer_id=? AND plan_id=? AND status='Active'"
+            "SELECT s.id FROM subscriptions s
+             JOIN service_plans p ON s.plan_id = p.id
+             WHERE s.customer_id = ? AND p.price = ? AND s.status = 'Active'"
         );
-        $stmt->bind_param("ii", $customerId, $planId);
+        $stmt->bind_param("id", $customerId, $plan['price']);
         $stmt->execute();
         $existing = $stmt->get_result()->fetch_assoc();
 
         if ($existing) {
-            $message = 'You already have an active subscription for this plan.';
+            $message = 'You already have an active subscription at this price (' . number_format($plan['price']) . ' RWF/month). Cancel it first before subscribing to an equivalent plan.';
             $msgType = 'error';
         } else {
             if ($subscriptionModel->create($customerId, $planId)) {
@@ -134,9 +137,12 @@ $myInvoices = $invStmt->get_result();
 
 <div class="portal-body">
 
-  <div class="welcome-banner">
-    <h2>Welcome back, <?= htmlspecialchars(explode(' ', $customerName)[0]) ?>!</h2>
-    <p>Browse our internet packages below and subscribe to get connected.</p>
+  <div class="welcome-banner" style="display:flex;justify-content:space-between;align-items:center;">
+    <div>
+      <h2>Welcome back, <?= htmlspecialchars(explode(' ', $customerName)[0]) ?>!</h2>
+      <p>Browse our internet packages below and subscribe to get connected.</p>
+    </div>
+    <a href="portal_report.php" class="btn" style="background:#fff;color:#0a2540;font-weight:700;white-space:nowrap;">📄 My Profile Report</a>
   </div>
 
   <?php if ($message): ?>
